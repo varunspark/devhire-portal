@@ -31,5 +31,33 @@ pipeline {
                 sh 'ls -lh frontend/dist'
             }
         }
+
+        stage('Deploy to Nexus') {
+            steps {
+                dir('backend') {
+                    withCredentials([
+                        usernamePassword(credentialsId: 'nexus-releases', usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PASS')
+                    ]) {
+                        writeFile file: 'nexus-settings.xml', text: """
+                        <settings>
+                          <servers>
+                            <server>
+                              <id>nexus-releases</id>
+                              <username>${NEXUS_USER}</username>
+                              <password>${NEXUS_PASS}</password>
+                            </server>
+                            <server>
+                              <id>nexus-snapshots</id>
+                              <username>${NEXUS_USER}</username>
+                              <password>${NEXUS_PASS}</password>
+                            </server>
+                          </servers>
+                        </settings>
+                        """
+                        sh 'mvn deploy -DskipTests -s nexus-settings.xml'
+                    }
+                }
+            }
+        }
     }
 }
