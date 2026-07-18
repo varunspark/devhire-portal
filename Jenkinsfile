@@ -8,6 +8,14 @@ pipeline {
             }
         }
 
+        stage('Set Version') {
+            steps {
+                dir('backend') {
+                    sh "mvn versions:set -DnewVersion=1.0.${BUILD_NUMBER} -DgenerateBackupPoms=false"
+                }
+            }
+        }
+
         stage('Build Backend') {
             steps {
                 dir('backend') {
