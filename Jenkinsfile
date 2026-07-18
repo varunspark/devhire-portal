@@ -59,5 +59,35 @@ pipeline {
                 }
             }
         }
+
+        stage('Docker Build') {
+            steps {
+                withCredentials([
+                    usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKERHUB_USER', passwordVariable: 'DOCKERHUB_PASS')
+                ]) {
+                    sh """
+                        docker build -t ${DOCKERHUB_USER}/devhire-backend:${BUILD_NUMBER} -t ${DOCKERHUB_USER}/devhire-backend:latest ./backend
+                        docker build -t ${DOCKERHUB_USER}/devhire-frontend:${BUILD_NUMBER} -t ${DOCKERHUB_USER}/devhire-frontend:latest ./frontend
+                    """
+                }
+            }
+        }
+
+        stage('Docker Push') {
+            steps {
+                withCredentials([
+                    usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKERHUB_USER', passwordVariable: 'DOCKERHUB_PASS')
+                ]) {
+                    sh """
+                        echo "\$DOCKERHUB_PASS" | docker login -u "\$DOCKERHUB_USER" --password-stdin
+                        docker push ${DOCKERHUB_USER}/devhire-backend:${BUILD_NUMBER}
+                        docker push ${DOCKERHUB_USER}/devhire-backend:latest
+                        docker push ${DOCKERHUB_USER}/devhire-frontend:${BUILD_NUMBER}
+                        docker push ${DOCKERHUB_USER}/devhire-frontend:latest
+                        docker logout
+                    """
+                }
+            }
+        }
     }
 }
