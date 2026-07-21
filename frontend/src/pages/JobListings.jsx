@@ -12,11 +12,6 @@ export default function JobListings() {
   const [message, setMessage] = useState('');
   const { user } = useAuth();
 
-  useEffect(() => {
-    loadJobs();
-    if (user) loadMyApplications();
-  }, [user]);
-
   const loadJobs = async () => {
     try {
       const data = await getJobs();
@@ -36,6 +31,11 @@ export default function JobListings() {
       console.error(err);
     }
   };
+
+  useEffect(() => {
+    loadJobs();
+    if (user) loadMyApplications();
+  }, [user]);
 
   const handleApply = async (job) => {
     if (!user) {
